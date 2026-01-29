@@ -8,6 +8,7 @@ export const usePresentation = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [slides, setSlides] = useState<ExcalidrawElement[]>([]);
     const [originalElements, setOriginalElements] = useState<readonly ExcalidrawElement[]>([]);
+    const [initialAppState, setInitialAppState] = useState<any>(null);
 
     // Helper function to get elements inside a frame (excluding the frame itself)
     const getFrameContent = useCallback((frame: ExcalidrawElement, allElements: readonly ExcalidrawElement[]) => {
@@ -20,10 +21,9 @@ export const usePresentation = () => {
     }, []);
 
     // Helper function to zoom to fit frame content
-    const zoomToFrame = useCallback((frame: ExcalidrawElement) => {
+    const zoomToFrame = useCallback((frame: ExcalidrawElement, allElements: readonly ExcalidrawElement[]) => {
         if (!excalidrawAPI) return;
 
-        const allElements = excalidrawAPI.getSceneElements();
         const frameContent = getFrameContent(frame, allElements);
 
         // Temporarily hide the frame element and show only its content
@@ -37,7 +37,8 @@ export const usePresentation = () => {
             .filter((el) => el.type === "frame")
             .map((el) => ({
                 ...el,
-                opacity: 0, // Try to hide frame by setting opacity to 0
+                strokeColor: "transparent",
+                backgroundColor: "transparent",
             }));
 
         // Combine: hidden frames + visible content + other elements not in any frame
@@ -81,6 +82,7 @@ export const usePresentation = () => {
 
         // Store original elements to restore later
         setOriginalElements(elements);
+        setInitialAppState(excalidrawAPI.getAppState());
 
         // Sort frames: Top-to-bottom, then Left-to-right
         frames.sort((a, b) => {
@@ -96,7 +98,7 @@ export const usePresentation = () => {
 
         // Zoom to first slide
         setTimeout(() => {
-            zoomToFrame(frames[0]);
+            zoomToFrame(frames[0], elements);
         }, 100);
     }, [excalidrawAPI, zoomToFrame]);
 
@@ -106,9 +108,9 @@ export const usePresentation = () => {
         const nextIndex = Math.min(currentSlide + 1, slides.length - 1);
         if (nextIndex !== currentSlide) {
             setCurrentSlide(nextIndex);
-            zoomToFrame(slides[nextIndex]);
+            zoomToFrame(slides[nextIndex], originalElements);
         }
-    }, [excalidrawAPI, slides, currentSlide, zoomToFrame]);
+    }, [excalidrawAPI, slides, currentSlide, zoomToFrame, originalElements]);
 
     const prevSlide = useCallback(() => {
         if (!excalidrawAPI || !slides.length) return;
@@ -116,22 +118,30 @@ export const usePresentation = () => {
         const prevIndex = Math.max(currentSlide - 1, 0);
         if (prevIndex !== currentSlide) {
             setCurrentSlide(prevIndex);
-            zoomToFrame(slides[prevIndex]);
+            zoomToFrame(slides[prevIndex], originalElements);
         }
-    }, [excalidrawAPI, slides, currentSlide, zoomToFrame]);
+    }, [excalidrawAPI, slides, currentSlide, zoomToFrame, originalElements]);
 
     const exitPresentation = useCallback(() => {
         if (excalidrawAPI && originalElements.length > 0) {
+            const restoreState = initialAppState ? {
+                ...initialAppState,
+                zoom: { value: 1 },
+                // Restore scrollX/Y from initial state automatically by spreading
+            } : undefined;
+
             // Restore original elements
             excalidrawAPI.updateScene({
                 elements: originalElements,
+                appState: restoreState,
             });
         }
         setPresentationMode(false);
         setSlides([]);
         setCurrentSlide(0);
         setOriginalElements([]);
-    }, [excalidrawAPI, originalElements]);
+        setInitialAppState(null);
+    }, [excalidrawAPI, originalElements, initialAppState]);
 
     // Keyboard navigation
     useEffect(() => {
