@@ -1,9 +1,11 @@
 import { Excalidraw } from "@excalidraw/excalidraw";
 import "@excalidraw/excalidraw/index.css";
 import "./index.css";
-import { usePresentation } from "./hooks/usePresentation";
-import { PresentationControls } from "./components/PresentationControls";
-import { SlidesSidebar } from "./components/SlidesSidebar";
+import {
+  usePresentation,
+  PresentationControls,
+  SlidesSidebar
+} from "./components/presentation";
 import { useState, useCallback, useEffect } from "react";
 import { Presentation } from "lucide-react";
 import { Button as ShadcnButton } from "./components/ui/button";
@@ -107,9 +109,11 @@ function App() {
     }
     saveTimeoutRef.id = window.setTimeout(() => {
       try {
+        // Exclude collaborators Map since it doesn't serialize to JSON
+        const { collaborators, ...serializableAppState } = appState;
         const dataToSave = {
           elements,
-          appState,
+          appState: serializableAppState,
           files,
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));

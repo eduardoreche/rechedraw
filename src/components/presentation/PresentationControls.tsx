@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { useState, useEffect } from "react";
 
 interface PresentationControlsProps {
@@ -11,14 +11,14 @@ interface PresentationControlsProps {
     onExit: () => void;
 }
 
-export const PresentationControls = ({
+export function PresentationControls({
     presentationMode,
     currentSlide,
     totalSlides,
     onNext,
     onPrev,
     onExit,
-}: PresentationControlsProps) => {
+}: PresentationControlsProps) {
     const [showToast, setShowToast] = useState(false);
 
     // Show toast when entering presentation mode
@@ -95,4 +95,4 @@ export const PresentationControls = ({
             </div>
         </>
     ) : null;
-};
+}

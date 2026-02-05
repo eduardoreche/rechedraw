@@ -54,8 +54,6 @@ export const usePresentation = (initialSlideOrder: string[] = []) => {
 
         const updatedElements = [...hiddenFrames, ...elementsToShow, ...otherElements];
 
-        // Update scene with modified elements
-        // Note: updateScene expects readonly elements usually, but here we are passing modified copies
         excalidrawAPI.updateScene({
             elements: updatedElements,
         });

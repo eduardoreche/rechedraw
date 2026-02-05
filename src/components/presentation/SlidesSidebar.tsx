@@ -2,14 +2,14 @@ import { useEffect, useState, memo } from "react";
 import { exportToCanvas } from "@excalidraw/excalidraw";
 import type { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 import { GripVertical, Play, ChevronDown, ChevronUp, HelpCircle, Keyboard, MousePointer, Move } from "lucide-react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import {
     Sheet,
     SheetContent,
     SheetHeader,
     SheetTitle,
     SheetFooter,
-} from "./ui/sheet";
+} from "../ui/sheet";
 
 const HELP_COLLAPSED_KEY = "rechedraw-help-collapsed";
 
@@ -24,7 +24,7 @@ interface SlidesSidebarProps {
     onStartPresentation: () => void;
 }
 
-export const SlidesSidebar = ({
+export function SlidesSidebar({
     isOpen,
     onClose,
     orderedFrames,
@@ -33,11 +33,11 @@ export const SlidesSidebar = ({
     getFrameContent,
     excalidrawAPI,
     onStartPresentation,
-}: SlidesSidebarProps) => {
+}: SlidesSidebarProps) {
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
     const [helpCollapsed, setHelpCollapsed] = useState(() => {
         const saved = localStorage.getItem(HELP_COLLAPSED_KEY);
-        return saved === "true"; // Default to expanded (false) if not saved
+        return saved === "true"; // Default: false (expanded)
     });
 
     // Persist help collapsed state
@@ -75,8 +75,6 @@ export const SlidesSidebar = ({
     const handleDragEnd = () => {
         setDraggedIndex(null);
     };
-
-
     const SlideThumbnail = memo(({ frame, index }: { frame: ExcalidrawElement, index: number }) => {
         const [thumbnail, setThumbnail] = useState<string | null>(null);
 
@@ -268,4 +266,4 @@ export const SlidesSidebar = ({
             </SheetContent>
         </Sheet>
     );
-};
+}
