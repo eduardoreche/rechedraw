@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 @plugin "tailwindcss-animate";
-@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -16,6 +15,38 @@ body {
 #root {
   width: 100%;
   height: 100%;
+}
+
+/* Hide Excalidraw UI during presentation mode */
+.presentation-mode .excalidraw .App-menu,
+.presentation-mode .excalidraw .App-toolbar,
+.presentation-mode .excalidraw .layer-ui__wrapper__top-right,
+.presentation-mode .excalidraw .layer-ui__wrapper__footer,
+.presentation-mode .excalidraw .Island,
+.presentation-mode .excalidraw .HintViewer,
+.presentation-mode .excalidraw .App-menu__left,
+.presentation-mode .excalidraw .App-menu__right,
+.presentation-mode .excalidraw .ToolIcon,
+.presentation-mode .excalidraw .zoom-actions,
+.presentation-mode .excalidraw .undo-redo-buttons,
+.presentation-mode .excalidraw .App-toolbar-container,
+.presentation-mode .excalidraw .shapes-section,
+.presentation-mode .excalidraw .main-menu-trigger,
+.presentation-mode .excalidraw .mobile-misc-tools-container,
+.presentation-mode .excalidraw .default-sidebar {
+  display: none !important;
+}
+
+/* Hide frame borders during presentation */
+.presentation-mode .excalidraw .excalidraw-frame-name,
+.presentation-mode .excalidraw g[data-id]>rect[stroke],
+.presentation-mode .excalidraw .excalidraw__canvas g>rect:first-child {
+  stroke: transparent !important;
+  stroke-opacity: 0 !important;
+}
+
+.presentation-mode .excalidraw text.excalidraw-frame-name {
+  display: none !important;
 }
 
 @theme inline {
@@ -132,6 +163,7 @@ body {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }

@@ -4,9 +4,57 @@ import "./index.css";
 import { usePresentation } from "./hooks/usePresentation";
 import { PresentationControls } from "./components/PresentationControls";
 import { SlidesSidebar } from "./components/SlidesSidebar";
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Presentation } from "lucide-react";
 import { Button as ShadcnButton } from "./components/ui/button";
+import type { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
+import type { AppState, BinaryFiles } from "@excalidraw/excalidraw/types";
+
+const STORAGE_KEY = "rechedraw-data";
+const SLIDE_ORDER_KEY = "rechedraw-slide-order";
+
+// Load initial data from localStorage
+const loadFromStorage = () => {
+  try {
+    const data = localStorage.getItem(STORAGE_KEY);
+    if (data) {
+      const parsed = JSON.parse(data);
+      return {
+        elements: parsed.elements || [],
+        appState: parsed.appState || {},
+        files: parsed.files || {},
+      };
+    }
+  } catch (error) {
+    console.error("Failed to load from localStorage:", error);
+  }
+  return { elements: [], appState: {}, files: {} };
+};
+
+// Load slide order from localStorage
+const loadSlideOrder = (): string[] => {
+  try {
+    const data = localStorage.getItem(SLIDE_ORDER_KEY);
+    if (data) {
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.error("Failed to load slide order from localStorage:", error);
+  }
+  return [];
+};
+
+// Save slide order to localStorage
+const saveSlideOrder = (frameIds: string[]) => {
+  try {
+    localStorage.setItem(SLIDE_ORDER_KEY, JSON.stringify(frameIds));
+  } catch (error) {
+    console.error("Failed to save slide order to localStorage:", error);
+  }
+};
+
+const initialData = loadFromStorage();
+const initialSlideOrder = loadSlideOrder();
 
 function App() {
   const {
@@ -23,34 +71,122 @@ function App() {
     nextSlide,
     prevSlide,
     exitPresentation,
-  } = usePresentation();
+  } = usePresentation(initialSlideOrder);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return initialData.appState?.theme === "dark";
+  });
   const scanTimeoutRef = useState<{ id: number | null }>({ id: null })[0];
+  const saveTimeoutRef = useState<{ id: number | null }>({ id: null })[0];
+
+  // Save slide order when it changes
+  useEffect(() => {
+    if (orderedFrames.length > 0) {
+      saveSlideOrder(orderedFrames.map(f => f.id));
+    }
+  }, [orderedFrames]);
+
+  // Sync dark mode with document for portals (Sheet, etc.)
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [isDarkMode]);
+
+  // Save to localStorage (debounced)
+  const saveToStorage = useCallback((
+    elements: readonly ExcalidrawElement[],
+    appState: AppState,
+    files: BinaryFiles
+  ) => {
+    if (saveTimeoutRef.id) {
+      window.clearTimeout(saveTimeoutRef.id);
+    }
+    saveTimeoutRef.id = window.setTimeout(() => {
+      try {
+        const dataToSave = {
+          elements,
+          appState,
+          files,
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+      } catch (error) {
+        console.error("Failed to save to localStorage:", error);
+      }
+    }, 300);
+  }, [saveTimeoutRef]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't handle shortcuts during presentation (handled in usePresentation)
+      if (presentationMode) return;
+
+      // Ctrl+Shift+P: Open presentation sidebar
+      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        setSidebarOpen(true);
+      }
+
+      // Ctrl+Enter: Start presentation
+      if (e.ctrlKey && e.key === "Enter") {
+        e.preventDefault();
+        if (orderedFrames.length > 0) {
+          startPresentation();
+        } else {
+          setSidebarOpen(true); // Open sidebar if no frames to show user
+        }
+      }
+
+      // ESC: Close sidebar if open
+      if (e.key === "Escape" && sidebarOpen) {
+        e.preventDefault();
+        setSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [presentationMode, sidebarOpen, orderedFrames.length, startPresentation]);
 
   return (
-    <div className="relative w-full h-full">
-      <Excalidraw
-        excalidrawAPI={setExcalidrawAPI}
-        viewModeEnabled={presentationMode}
-        onChange={(elements) => {
-          if (!presentationMode) {
-            if (scanTimeoutRef.id) {
-              window.clearTimeout(scanTimeoutRef.id);
+    <div className={`relative w-full h-full ${isDarkMode ? "dark" : ""}`}>
+      <div className={`w-full h-full ${presentationMode ? "presentation-mode" : ""}`}>
+        <Excalidraw
+          excalidrawAPI={setExcalidrawAPI}
+          initialData={initialData}
+          onChange={(elements, appState, files) => {
+            // Track dark mode
+            const newDarkMode = appState.theme === "dark";
+            if (newDarkMode !== isDarkMode) {
+              setIsDarkMode(newDarkMode);
             }
-            scanTimeoutRef.id = window.setTimeout(() => {
-              scanFrames(elements);
-            }, 500);
-          }
-        }}
-      />
+
+            if (!presentationMode) {
+              // Save to localStorage
+              saveToStorage(elements, appState, files);
+
+              // Scan frames (debounced)
+              if (scanTimeoutRef.id) {
+                window.clearTimeout(scanTimeoutRef.id);
+              }
+              scanTimeoutRef.id = window.setTimeout(() => {
+                scanFrames(elements);
+              }, 500);
+            }
+          }}
+        />
+      </div>
 
       {/* Presentation Button - positioned absolute */}
       {!presentationMode && (
         <ShadcnButton
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="cursor-pointer fixed top-4 right-32 z-[50] shadow-md border border-slate-200"
-          title="Presentation"
+          title="Presentation (Ctrl+Shift+P)"
         >
           <Presentation className="h-4 w-4 mr-2" />
           Presentation

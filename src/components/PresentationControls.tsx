@@ -1,6 +1,6 @@
-import { useEffect } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "./ui/button";
+import { useState, useEffect } from "react";
 
 interface PresentationControlsProps {
     presentationMode: boolean;
@@ -19,64 +19,80 @@ export const PresentationControls = ({
     onPrev,
     onExit,
 }: PresentationControlsProps) => {
-    // Handle fullscreen mode
+    const [showToast, setShowToast] = useState(false);
+
+    // Show toast when entering presentation mode
     useEffect(() => {
         if (presentationMode) {
-            // Enter fullscreen
-            const elem = document.documentElement;
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen().catch((err) => {
-                    console.warn("Failed to enter fullscreen:", err);
-                });
-            }
+            setShowToast(true);
+            const timer = setTimeout(() => {
+                setShowToast(false);
+            }, 5000);
+            return () => clearTimeout(timer);
         } else {
-            // Exit fullscreen
-            if (document.fullscreenElement) {
-                document.exitFullscreen().catch((err) => {
-                    console.warn("Failed to exit fullscreen:", err);
-                });
-            }
+            setShowToast(false);
         }
     }, [presentationMode]);
 
     return presentationMode ? (
-        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[9999] flex gap-2">
-            <div className="flex items-center gap-2 bg-white/95 p-2 rounded-lg shadow-xl backdrop-blur-sm border border-slate-200">
-                <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={onPrev}
-                    disabled={currentSlide === 0}
-                    className="h-9 w-9"
-                >
-                    <ChevronLeft className="w-4 h-4" />
-                </Button>
+        <>
+            {/* Fullscreen hint toast */}
+            {showToast && (
+                <div className="fixed top-5 left-1/2 -translate-x-1/2 z-[9999] animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="bg-slate-900/90 text-white px-4 py-2.5 rounded-lg shadow-xl backdrop-blur-sm flex items-center gap-2">
+                        <span className="text-sm">
+                            Press <kbd className="px-1.5 py-0.5 bg-slate-700 rounded text-xs font-mono">F11</kbd> for fullscreen
+                        </span>
+                        <button
+                            onClick={() => setShowToast(false)}
+                            className="ml-2 text-slate-400 hover:text-white transition-colors"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
 
-                <span className="text-sm font-medium px-2 min-w-[3rem] text-center text-slate-900">
-                    {currentSlide + 1} / {totalSlides}
-                </span>
+            {/* Navigation controls */}
+            <div className="fixed bottom-5 right-5 z-[9999] opacity-40 hover:opacity-100 transition-opacity duration-300">
+                <div className="flex items-center gap-1.5 bg-black/60 p-1.5 rounded-lg shadow-lg backdrop-blur-sm">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={onPrev}
+                        disabled={currentSlide === 0}
+                        className="h-8 w-8 text-white hover:bg-white/20 disabled:opacity-30"
+                    >
+                        <ChevronLeft className="w-4 h-4" />
+                    </Button>
 
-                <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={onNext}
-                    disabled={currentSlide === totalSlides - 1}
-                    className="h-9 w-9"
-                >
-                    <ChevronRight className="w-4 h-4" />
-                </Button>
+                    <span className="text-xs font-medium px-2 min-w-[2.5rem] text-center text-white/90">
+                        {currentSlide + 1}/{totalSlides}
+                    </span>
 
-                <div className="w-px h-4 bg-slate-200 mx-1" />
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={onNext}
+                        disabled={currentSlide === totalSlides - 1}
+                        className="h-8 w-8 text-white hover:bg-white/20 disabled:opacity-30"
+                    >
+                        <ChevronRight className="w-4 h-4" />
+                    </Button>
 
-                <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={onExit}
-                >
-                    <X className="w-4 h-4 mr-2" />
-                    Exit
-                </Button>
+                    <div className="w-px h-4 bg-white/30 mx-0.5" />
+
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={onExit}
+                        className="h-8 w-8 text-white hover:bg-red-500/50"
+                        title="Exit (ESC)"
+                    >
+                        <X className="w-4 h-4" />
+                    </Button>
+                </div>
             </div>
-        </div>
+        </>
     ) : null;
 };
