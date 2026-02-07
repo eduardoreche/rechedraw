@@ -8,7 +8,7 @@ import {
 } from "./components/presentation";
 import { useState, useCallback, useEffect } from "react";
 import { Presentation } from "lucide-react";
-import { Button as ShadcnButton } from "./components/ui/button";
+import { Button } from "./components/ui/button";
 import type { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 import type { AppState, BinaryFiles } from "@excalidraw/excalidraw/types";
 
@@ -182,20 +182,23 @@ function App() {
               }, 500);
             }
           }}
+          renderTopRightUI={() => (
+            <>
+              {!presentationMode && (
+                <Button
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="cursor-pointer fixed top-4 right-30 z-[50] shadow-md border border-slate-200"
+                  title="Presentation (Ctrl+Shift+P)"
+                >
+                  <Presentation className="h-4 w-4 mr-2" />
+                  Presentation
+                </Button>
+              )}
+            </>
+          )}
         />
       </div>
 
-      {/* Presentation Button - positioned absolute */}
-      {!presentationMode && (
-        <ShadcnButton
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="cursor-pointer fixed top-4 right-32 z-[50] shadow-md border border-slate-200"
-          title="Presentation (Ctrl+Shift+P)"
-        >
-          <Presentation className="h-4 w-4 mr-2" />
-          Presentation
-        </ShadcnButton>
-      )}
 
       <PresentationControls
         presentationMode={presentationMode}
