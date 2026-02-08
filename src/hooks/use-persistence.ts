@@ -1,12 +1,14 @@
 import { useMemo, useCallback, useRef } from "react";
 import type { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 import type { AppState, BinaryFiles } from "@excalidraw/excalidraw/types";
+import { exportToBlob } from "@excalidraw/excalidraw";
 import {
     loadDrawingFromLocalStorage,
     loadAppState,
     sanitizeAppState,
     saveAppState,
 } from "../utils/storage";
+import { useUpdateWorkspace } from "./use-workspaces";
 
 interface UsePersistenceProps {
     currentWorkspaceId: number | null;
@@ -20,6 +22,7 @@ export const usePersistence = ({
     saveDrawingMutation,
 }: UsePersistenceProps) => {
     const saveTimeoutRef = useRef<number | null>(null);
+    const updateWorkspace = useUpdateWorkspace();
 
     // Memoize the initial data to avoid re-renders
     const initialData = useMemo(() => {
@@ -68,13 +71,15 @@ export const usePersistence = ({
             }
 
             saveTimeoutRef.current = window.setTimeout(async () => {
-                if (activeDrawing) {
+                if (activeDrawing && currentWorkspaceId) {
                     try {
                         const dataToSave = {
                             elements,
                             appState: sanitizeAppState(appState),
                             files,
                         };
+
+                        // Save drawing data
                         await saveDrawingMutation.mutateAsync({
                             id: activeDrawing.id,
                             data: dataToSave,
@@ -82,13 +87,46 @@ export const usePersistence = ({
 
                         // Also save AppState to localStorage
                         saveAppState(appState);
+
+                        // Generate and save thumbnail
+                        if (elements.length > 0) {
+                            try {
+                                const exportAppState = {
+                                    ...appState,
+                                    viewBackgroundColor: appState.theme === 'dark' && appState.viewBackgroundColor === '#ffffff'
+                                        ? '#121212'
+                                        : appState.viewBackgroundColor
+                                };
+
+                                const blob = await exportToBlob({
+                                    elements,
+                                    appState: exportAppState,
+                                    files,
+                                    mimeType: "image/png",
+                                });
+
+                                if (blob) {
+                                    const reader = new FileReader();
+                                    reader.readAsDataURL(blob);
+                                    reader.onloadend = () => {
+                                        const base64data = reader.result as string;
+                                        updateWorkspace.mutate({
+                                            id: currentWorkspaceId,
+                                            thumbnail: base64data
+                                        });
+                                    };
+                                }
+                            } catch (thumbnailError) {
+                                console.error("Failed to generate thumbnail:", thumbnailError);
+                            }
+                        }
                     } catch (error) {
                         console.error("Failed to save drawing:", error);
                     }
                 }
             }, 500); // 500ms debounce
         },
-        [activeDrawing, saveDrawingMutation]
+        [activeDrawing, currentWorkspaceId, saveDrawingMutation, updateWorkspace]
     );
 
     return {

@@ -6,9 +6,12 @@ export interface Workspace {
     name: string;
     slug: string;
     isPermanent?: boolean;
+    thumbnail?: string; // Data URL
     createdAt: Date;
     updatedAt: Date;
 }
+
+
 
 export interface Drawing {
     id: number;
@@ -51,6 +54,12 @@ db.version(2).stores({
             workspace.isPermanent = workspace.name === 'Base';
         }
     });
+});
+
+// Version 3: Add thumbnail field
+db.version(3).stores({
+    workspaces: '++id, name, slug, isPermanent, createdAt, updatedAt', // thumbnail is not indexed
+    drawings: '++id, workspaceId, name, createdAt, updatedAt'
 });
 
 export { db };

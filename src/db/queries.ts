@@ -35,33 +35,36 @@ export const createWorkspace = async (name: string, isPermanent: boolean = false
     return workspaceId;
 };
 
-export const updateWorkspace = async (id: number, name: string): Promise<void> => {
-    // Check if new name already exists (excluding current workspace)
-    const existing = await db.workspaces.where('name').equals(name).first();
-    if (existing && existing.id !== id) {
-        throw new Error(`Workspace with name "${name}" already exists`);
+export const updateWorkspace = async (id: number, updates: { name?: string; thumbnail?: string }): Promise<void> => {
+    // If name is being updated, check for uniqueness
+    if (updates.name) {
+        // Check if new name already exists (excluding current workspace)
+        const existing = await db.workspaces.where('name').equals(updates.name).first();
+        if (existing && existing.id !== id) {
+            throw new Error(`Workspace with name "${updates.name}" already exists`);
+        }
     }
 
-    // Generate new slug if name changed
     const workspace = await db.workspaces.get(id);
     if (!workspace) {
         throw new Error('Workspace not found');
     }
 
-    const updates: Partial<Workspace> = {
-        name,
+    const dbUpdates: Partial<Workspace> = {
+        ...updates,
         updatedAt: new Date(),
     };
 
-    if (workspace.name !== name) {
-        const baseSlug = generateSlug(name);
+    // Generate new slug if name changed
+    if (updates.name && workspace.name !== updates.name) {
+        const baseSlug = generateSlug(updates.name);
         const existingSlugs = (await db.workspaces.toArray())
             .filter(w => w.id !== id)
             .map(w => w.slug);
-        updates.slug = ensureUniqueSlug(baseSlug, existingSlugs);
+        dbUpdates.slug = ensureUniqueSlug(baseSlug, existingSlugs);
     }
 
-    await db.workspaces.update(id, updates);
+    await db.workspaces.update(id, dbUpdates);
 };
 
 export const deleteWorkspace = async (id: number): Promise<void> => {
