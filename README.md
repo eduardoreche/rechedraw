@@ -1,73 +1,73 @@
-# React + TypeScript + Vite
+# RecheDraw
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**RecheDraw** is an enhanced, open-source fork of Excalidraw designed to bring advanced features like workspaces and cloud sync to everyone, while serving as a testbed for AI-assisted software development.
 
-Currently, two official plugins are available:
+## 🚀 Vision & Goals
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **"Excalidraw+" for Everyone:** We are building advanced features (like Workspaces and Cloud Sync) that are usually behind a paywall, but keeping them open-source.
+- **AI Research Lab:** This project serves as a testbed for AI-assisted software development. The code quality and architectural decisions are as important as the features themselves.
 
-## React Compiler
+## ✨ Current Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- ✅ **Full Excalidraw Canvas**: Complete drawing tools and library support.
+- ✅ **Local Saving**: Basic single-file persistence.
+- ✅ **Presentation Mode**: Present your diagrams seamlessly.
 
-## Expanding the ESLint configuration
+## 🛠 Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Core:** React.js / TypeScript (Strict Mode)
+- **Engine:** `@excalidraw/excalidraw`
+- **UI Framework:** `shadcn/ui` (Radix Primitives + Tailwind)
+- **Styling:** Tailwind CSS
+- **State/Storage:** LocalStorage / IndexedDB (Local-First philosophy)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🏁 Getting Started
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+To get the project up and running locally:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/eduardoreche/rechedraw.git
+    cd rechedraw
+    ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+3.  **Start the development server:**
+    ```bash
+    npm run dev
+    ```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 📜 Development Rules (The "Constitution")
+
+For contributors and AI agents alike, we adhere to these core principles:
+
+1.  **Prioritize Local-First:** Always implement features using browser storage (IndexedDB/LocalStorage) *first*. Cloud sync is an optional add-on.
+2.  **UI Consistency:**
+    - Use `shadcn/ui` components for all application UI (modals, sidebars, settings).
+    - Ensure new UI elements blend with the "Hand-Drawn" aesthetic where appropriate.
+3.  **Code Structure:**
+    - **Isolation:** New features (e.g., "Workspaces") must be isolated in their own directories (e.g., `src/features/workspaces`).
+    - **No Spaghettification:** Avoid modifying the core `excalidraw` package files directly; wrap them or use provided APIs.
+4.  **Testing:**
+    - Write unit tests for logic.
+    - Write component tests for UI.
+
+## 🗺 Roadmap
+
+Our current focus is on **Workspace Management**.
+
+1.  **Workspace Management (High Priority):**
+    - Create a "Project/Folder" structure to group multiple drawings.
+    - Robust IndexedDB schema for metadata.
+2.  **Version History:**
+    - "Time Travel" mechanism to revert drawings.
+3.  **Cloud Sync:**
+    - Future integration with Supabase/Firebase.
+
+---
+
+*This project is built with ❤️ and AI assistance.*
