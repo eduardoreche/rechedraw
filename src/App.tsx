@@ -163,7 +163,7 @@ function App() {
                     {/* Workspace name display */}
                     {currentWorkspaceName && (
                       <div className="workspace-name-display">
-                        {currentWorkspaceName}
+                        <span className="text-2xl">{currentWorkspaceName}</span>
                       </div>
                     )}
 

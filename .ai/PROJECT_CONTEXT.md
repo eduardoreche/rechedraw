@@ -35,17 +35,25 @@
 
 
 ## 4. Current Features
-* ✅ Full Excalidraw Canvas (Tools, Library).
-* ✅ Local Saving (Basic single-file persistence).
-* ✅ Presentation Mode.
+* ✅ **Full Excalidraw Canvas**: Complete drawing tools and library support.
+* ✅ **Workspace Management**:
+    * Create, Read, Update, Delete (CRUD) workspaces.
+    * **Search** workspaces by name.
+    * **List/Grid View** toggle for workspace dashboard.
+    * Persisted preferences (view mode).
+* ✅ **Presentation Mode**:
+    * Slide navigation and ordering.
+    * Fullscreen mode.
+    * Sidebar for slide management.
+* ✅ **Local Saving**: Robust persistence using IndexedDB (Dexie.js) + LocalStorage backup.
+* ✅ **UI/UX**:
+    * Dark/Light mode sync with system/canvas.
+    * Responsive Sidebar (Collapsible).
 
 ## 5. Roadmap (Prioritized)
-**Current Focus:** 🏗️ **Workspace Management**
+**Current Focus:** 🏗️ **Advanced Diagramming & Cloud Sync**
 
-1.  **Workspace Management (High Priority):**
-    * Create a "Project/Folder" structure to group multiple drawings.
-    * *Implementation Hint:* Needs a robust IndexDB schema to store metadata (Project Name, ID) and link it to drawing data blobs.
-2.  **Diagram layouts** 
+1.  **Diagram Layouts (Next Priority)** 
     * Implement Flow Chart Diagrams
     * Implement Data Flow Diagrams
     * Implement Entity Relationship Diagrams
@@ -54,10 +62,8 @@
     * Implement C4 Diagrams
     * Implement ArchiMate Diagrams
     * Implement SysML Diagrams
-    * Implement Archimate Diagrams
-    * Implement Archimate Diagrams
-3.  **Version History:**
+2.  **Version History:**
     * Implement a "Time Travel" mechanism to revert drawings.
     * *Strategy:* Delta updates or snapshotting stored locally.
-4.  **Cloud Sync:**
-    * Future integration with Supabase/Firebase.t
+3.  **Cloud Sync:**
+    * Future integration with Supabase/Firebase.
