@@ -249,6 +249,19 @@ body {
   color: #1b1b1f !important;
 }
 
+.dark .workspace-button {
+  background: #232329 !important;
+  box-shadow: 0 0 0 1px #333 !important;
+}
+
+.dark .workspace-button:hover {
+  background: #2c2c35 !important;
+}
+
+.dark .workspace-button svg {
+  color: #e3e3e8 !important;
+}
+
 /* Push Excalidraw's main menu to the right to make room for workspace button */
 .excalidraw .main-menu-trigger {
   margin-left: 3.25rem !important;
