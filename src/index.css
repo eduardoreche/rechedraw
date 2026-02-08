@@ -168,3 +168,109 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Excalidraw-style button utility class */
+@layer components {
+  .excalidraw-btn {
+    @apply flex items-center justify-center cursor-pointer transition-colors;
+
+    /* Fixed dimensions matching Excalidraw */
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+
+    /* Light mode colors */
+    background-color: #ececf4;
+    color: #1b1b1f;
+    box-shadow: 0 0 0 1px #ffffff;
+  }
+
+  .excalidraw-btn:hover {
+    background-color: #e0e0e9;
+  }
+
+  .excalidraw-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Dark mode colors */
+  .dark .excalidraw-btn {
+    background-color: #232329;
+    color: #e3e3e8;
+    box-shadow: 0 0 0 1px #121212;
+  }
+
+  .dark .excalidraw-btn:hover {
+    background-color: #2c2c35;
+  }
+}
+
+/* Position workspace button to the left of Excalidraw's main menu */
+.workspace-button {
+  position: fixed !important;
+  top: 1rem !important;
+  /* Match Excalidraw's menu button (16px) */
+  left: 0.75rem !important;
+  z-index: 100 !important;
+
+  /* Match Excalidraw's main menu button exactly */
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+
+  background: #ececf4 !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 10px !important;
+
+  box-shadow: 0 0 0 1px #fff !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  cursor: pointer !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.workspace-button:hover {
+  background: #e0e0ea !important;
+}
+
+.workspace-button svg {
+  width: 20px !important;
+  height: 20px !important;
+  color: #1b1b1f !important;
+}
+
+/* Push Excalidraw's main menu to the right to make room for workspace button */
+.excalidraw .main-menu-trigger {
+  margin-left: 3.25rem !important;
+}
+
+/* Workspace name display next to main menu */
+.workspace-name-display {
+  position: fixed;
+  top: 1rem;
+  left: 7.5rem;
+  z-index: 100;
+
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 8px;
+
+  font-size: 14px;
+  font-weight: 500;
+  color: #1b1b1f;
+}
+
+.dark .workspace-name-display {
+  color: #ececf4;
+}

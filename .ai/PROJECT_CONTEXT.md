@@ -28,8 +28,11 @@
 4.  **Testing:**
     * Write unit tests (Vitest/Jest) for logic.
     * Write component tests for UI.
-5. **README.md**
+5. **Excalidraw UI**
+    * Make sure you never touch original excalidraw ui, try to position new features and buttons using their api OR by css, html tricks.
+6. **README.md**
     * Always keep the README.md file updated with the latest information about the project.
+
 
 ## 4. Current Features
 * ✅ Full Excalidraw Canvas (Tools, Library).
@@ -42,8 +45,19 @@
 1.  **Workspace Management (High Priority):**
     * Create a "Project/Folder" structure to group multiple drawings.
     * *Implementation Hint:* Needs a robust IndexDB schema to store metadata (Project Name, ID) and link it to drawing data blobs.
-2.  **Version History:**
+2.  **Diagram layouts** 
+    * Implement Flow Chart Diagrams
+    * Implement Data Flow Diagrams
+    * Implement Entity Relationship Diagrams
+    * Implement UML Diagrams
+    * Implement BPMN Diagrams
+    * Implement C4 Diagrams
+    * Implement ArchiMate Diagrams
+    * Implement SysML Diagrams
+    * Implement Archimate Diagrams
+    * Implement Archimate Diagrams
+3.  **Version History:**
     * Implement a "Time Travel" mechanism to revert drawings.
     * *Strategy:* Delta updates or snapshotting stored locally.
-3.  **Cloud Sync:**
+4.  **Cloud Sync:**
     * Future integration with Supabase/Firebase.t
