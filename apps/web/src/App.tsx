@@ -11,7 +11,7 @@ import { Presentation, PanelRightOpen } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { DrawingSidebar } from "./features/drawing-list/components/DrawingSidebar";
 import { useScenes, useSaveScene } from "./hooks/use-scenes";
-import { useDrawings } from "./hooks/use-drawings";
+import { useDrawings, useCreateDrawing } from "./hooks/use-drawings";
 import { usePersistence } from "./hooks/use-persistence";
 import { useShortcuts } from "./hooks/use-shortcuts";
 import {
@@ -54,6 +54,7 @@ function App() {
   const { data: scenes } = useScenes(currentDrawingId);
   const saveSceneMutation = useSaveScene();
   const { data: drawings } = useDrawings();
+  const createDrawing = useCreateDrawing();
   const activeScene = scenes?.[0];
 
   // Persistence Hook
@@ -89,6 +90,20 @@ function App() {
       setCurrentDrawingName("");
     }
   }, [currentDrawingId, drawings]);
+
+  // Initialize default "Draft" drawing if none exists
+  useEffect(() => {
+    if (drawings && drawings.length === 0 && !createDrawing.isPending) {
+      createDrawing.mutate(
+        { name: "Draft", isPermanent: true },
+        {
+          onSuccess: (id) => {
+            setCurrentDrawingId(id);
+          },
+        }
+      );
+    }
+  }, [drawings, createDrawing]);
 
   useEffect(() => {
     if (orderedFrames.length > 0) {
