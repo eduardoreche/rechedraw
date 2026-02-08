@@ -9,18 +9,18 @@ import {
 import { useState, useEffect, useRef } from "react";
 import { Presentation, PanelRightOpen } from "lucide-react";
 import { Button } from "./components/ui/button";
-import { WorkspaceSidebar } from "./features/workspace/components/WorkspaceSidebar";
-import { useDrawings, useSaveDrawing } from "./hooks/use-drawings";
-import { useWorkspaces } from "./hooks/use-workspaces";
+import { DrawingSidebar } from "./features/drawing-list/components/DrawingSidebar";
+import { useScenes, useSaveScene } from "./hooks/use-scenes";
+import { useDrawings } from "./hooks/use-drawings";
 import { usePersistence } from "./hooks/use-persistence";
 import { useShortcuts } from "./hooks/use-shortcuts";
 import {
   loadSlideOrder,
   saveSlideOrder,
-  loadLastWorkspaceId,
-  saveLastWorkspaceId,
+  loadLastDrawingId,
+  saveLastDrawingId,
   sanitizeAppState,
-  saveDrawingToLocalStorage,
+  saveSceneToLocalStorage,
 } from "./utils/storage";
 
 const initialSlideOrder = loadSlideOrder();
@@ -42,25 +42,25 @@ function App() {
     exitPresentation,
   } = usePresentation(initialSlideOrder);
 
-  // Workspace state
-  const [currentWorkspaceId, setCurrentWorkspaceId] = useState<number | null>(() => loadLastWorkspaceId());
-  const [currentWorkspaceName, setCurrentWorkspaceName] = useState<string>("");
+  // Drawing state (formerly Workspace)
+  const [currentDrawingId, setCurrentDrawingId] = useState<number | null>(() => loadLastDrawingId());
+  const [currentDrawingName, setCurrentDrawingName] = useState<string>("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [slidesSidebarOpen, setSlidesSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const scanTimeoutRef = useRef<number | null>(null);
 
   // Fetch Data
-  const { data: drawings } = useDrawings(currentWorkspaceId);
-  const saveDrawingMutation = useSaveDrawing();
-  const { data: workspaces } = useWorkspaces();
-  const activeDrawing = drawings?.[0];
+  const { data: scenes } = useScenes(currentDrawingId);
+  const saveSceneMutation = useSaveScene();
+  const { data: drawings } = useDrawings();
+  const activeScene = scenes?.[0];
 
   // Persistence Hook
   const { initialData, saveDebounced } = usePersistence({
-    currentWorkspaceId,
-    activeDrawing,
-    saveDrawingMutation,
+    currentDrawingId,
+    activeScene,
+    saveSceneMutation,
   });
 
   // Shortcuts Hook
@@ -76,19 +76,19 @@ function App() {
 
   // Effects
   useEffect(() => {
-    if (currentWorkspaceId !== null) {
-      saveLastWorkspaceId(currentWorkspaceId);
+    if (currentDrawingId !== null) {
+      saveLastDrawingId(currentDrawingId);
     }
-  }, [currentWorkspaceId]);
+  }, [currentDrawingId]);
 
   useEffect(() => {
-    if (currentWorkspaceId && workspaces) {
-      const workspace = workspaces.find(w => w.id === currentWorkspaceId);
-      setCurrentWorkspaceName(workspace?.name || "");
+    if (currentDrawingId && drawings) {
+      const drawing = drawings.find(d => d.id === currentDrawingId);
+      setCurrentDrawingName(drawing?.name || "");
     } else {
-      setCurrentWorkspaceName("");
+      setCurrentDrawingName("");
     }
-  }, [currentWorkspaceId, workspaces]);
+  }, [currentDrawingId, drawings]);
 
   useEffect(() => {
     if (orderedFrames.length > 0) {
@@ -109,13 +109,15 @@ function App() {
     const newDarkMode = appState.theme === "dark";
     if (newDarkMode !== isDarkMode) setIsDarkMode(newDarkMode);
 
-    if (!presentationMode && activeDrawing && currentWorkspaceId) {
-      // Save to localStorage immediately (synchronous, no race conditions)
-      saveDrawingToLocalStorage(currentWorkspaceId, {
+    if (!presentationMode && activeScene && currentDrawingId) {
+      const dataToSave = {
         elements,
         appState: sanitizeAppState(appState),
         files,
-      });
+      };
+
+      // Save to localStorage immediately (synchronous, no race conditions)
+      saveSceneToLocalStorage(currentDrawingId, dataToSave);
 
       // Debounced save to DB
       saveDebounced(elements, appState, files);
@@ -130,13 +132,13 @@ function App() {
 
   return (
     <div className={`relative w-full h-full flex ${isDarkMode ? "dark" : ""}`}>
-      {/* Workspaces Sidebar */}
-      <WorkspaceSidebar
+      {/* Drawings Sidebar */}
+      <DrawingSidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
-        currentWorkspaceId={currentWorkspaceId}
-        onSelectWorkspace={(id) => {
-          setCurrentWorkspaceId(id);
+        currentDrawingId={currentDrawingId}
+        onSelectDrawing={(id) => {
+          setCurrentDrawingId(id);
           setSidebarOpen(false);
         }}
       />
@@ -144,7 +146,7 @@ function App() {
       <div className="flex-1 relative h-full">
         <div className={`w-full h-full ${presentationMode ? "presentation-mode" : ""}`}>
           <Excalidraw
-            key={String(currentWorkspaceId)} // Force remount when workspace changes to load correct initialData
+            key={String(currentDrawingId)} // Force remount when drawing changes to load correct initialData
             excalidrawAPI={setExcalidrawAPI}
             initialData={initialData}
             onChange={handleChange}
@@ -155,15 +157,17 @@ function App() {
                     <button
                       onClick={() => setSidebarOpen(!sidebarOpen)}
                       className="workspace-button excalidraw-btn"
-                      title="Workspaces"
+                      title="Drawings"
                     >
                       <PanelRightOpen />
                     </button>
 
-                    {/* Workspace name display */}
-                    {currentWorkspaceName && (
-                      <div className="workspace-name-display">
-                        <span className="text-2xl">{currentWorkspaceName}</span>
+                    {/* Drawing name display */}
+                    {currentDrawingName && (
+                      <div className="workspace-name-display flex items-center gap-2">
+                        <div className="text-muted-foreground text-sm uppercase tracking-wider font-semibold">
+                          {currentDrawingName}
+                        </div>
                       </div>
                     )}
 

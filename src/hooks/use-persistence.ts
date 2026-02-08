@@ -3,33 +3,33 @@ import type { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 import type { AppState, BinaryFiles } from "@excalidraw/excalidraw/types";
 import { exportToBlob } from "@excalidraw/excalidraw";
 import {
-    loadDrawingFromLocalStorage,
+    loadSceneFromLocalStorage,
     loadAppState,
     sanitizeAppState,
     saveAppState,
 } from "../utils/storage";
-import { useUpdateWorkspace } from "./use-workspaces";
+import { useUpdateDrawing } from "./use-drawings";
 
 interface UsePersistenceProps {
-    currentWorkspaceId: number | null;
-    activeDrawing: any;
-    saveDrawingMutation: any;
+    currentDrawingId: number | null;
+    activeScene: any;
+    saveSceneMutation: any;
 }
 
 export const usePersistence = ({
-    currentWorkspaceId,
-    activeDrawing,
-    saveDrawingMutation,
+    currentDrawingId,
+    activeScene,
+    saveSceneMutation,
 }: UsePersistenceProps) => {
     const saveTimeoutRef = useRef<number | null>(null);
-    const updateWorkspace = useUpdateWorkspace();
+    const updateDrawing = useUpdateDrawing();
 
     // Memoize the initial data to avoid re-renders
     const initialData = useMemo(() => {
-        if (!currentWorkspaceId) return null;
+        if (!currentDrawingId) return null;
 
         // Try to load from localStorage first (synchronous/fast)
-        const localData = loadDrawingFromLocalStorage(currentWorkspaceId);
+        const localData = loadSceneFromLocalStorage(currentDrawingId);
         if (localData) {
             return {
                 elements: localData.elements || [],
@@ -42,14 +42,14 @@ export const usePersistence = ({
         }
 
         // Fallback to database data if available
-        if (activeDrawing) {
+        if (activeScene) {
             return {
-                elements: (activeDrawing.data as any)?.elements || [],
+                elements: (activeScene.data as any)?.elements || [],
                 appState: {
                     ...loadAppState(),
-                    ...((activeDrawing.data as any)?.appState || {}),
+                    ...((activeScene.data as any)?.appState || {}),
                 },
-                files: (activeDrawing.data as any)?.files || null,
+                files: (activeScene.data as any)?.files || null,
             };
         }
 
@@ -57,7 +57,7 @@ export const usePersistence = ({
             elements: [],
             appState: loadAppState(),
         };
-    }, [currentWorkspaceId, activeDrawing]);
+    }, [currentDrawingId, activeScene]);
 
     // Debounced save to database
     const saveDebounced = useCallback(
@@ -71,7 +71,7 @@ export const usePersistence = ({
             }
 
             saveTimeoutRef.current = window.setTimeout(async () => {
-                if (activeDrawing && currentWorkspaceId) {
+                if (activeScene && currentDrawingId) {
                     try {
                         const dataToSave = {
                             elements,
@@ -79,9 +79,9 @@ export const usePersistence = ({
                             files,
                         };
 
-                        // Save drawing data
-                        await saveDrawingMutation.mutateAsync({
-                            id: activeDrawing.id,
+                        // Save scene data
+                        await saveSceneMutation.mutateAsync({
+                            id: activeScene.id,
                             data: dataToSave,
                         });
 
@@ -110,8 +110,8 @@ export const usePersistence = ({
                                     reader.readAsDataURL(blob);
                                     reader.onloadend = () => {
                                         const base64data = reader.result as string;
-                                        updateWorkspace.mutate({
-                                            id: currentWorkspaceId,
+                                        updateDrawing.mutate({
+                                            id: currentDrawingId,
                                             thumbnail: base64data
                                         });
                                     };
@@ -121,12 +121,12 @@ export const usePersistence = ({
                             }
                         }
                     } catch (error) {
-                        console.error("Failed to save drawing:", error);
+                        console.error("Failed to save scene:", error);
                     }
                 }
             }, 500); // 500ms debounce
         },
-        [activeDrawing, currentWorkspaceId, saveDrawingMutation, updateWorkspace]
+        [activeScene, currentDrawingId, saveSceneMutation, updateDrawing]
     );
 
     return {

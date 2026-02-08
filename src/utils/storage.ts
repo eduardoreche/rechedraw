@@ -2,8 +2,8 @@ import type { AppState } from "@excalidraw/excalidraw/types";
 
 export const SLIDE_ORDER_KEY = "rechedraw-slide-order";
 export const APPSTATE_KEY = "rechedraw-appstate";
-export const LAST_WORKSPACE_KEY = "rechedraw-last-workspace-id";
-export const DRAWING_DATA_KEY = "rechedraw-drawing-data";
+export const LAST_DRAWING_KEY = "rechedraw-last-drawing-id";
+export const SCENE_DATA_KEY = "rechedraw-scene-data";
 
 // Helper to sanitize appState for saving
 export const sanitizeAppState = (appState: AppState) => {
@@ -64,43 +64,60 @@ export const saveAppState = (appState: Partial<AppState>) => {
     }
 };
 
-// Save/load drawing data to/from localStorage
-export const saveDrawingToLocalStorage = (workspaceId: number | string, data: { elements: readonly any[]; appState: any; files: any }) => {
+// Save/load scene data to/from localStorage
+export const saveSceneToLocalStorage = (drawingId: number | string, data: { elements: readonly any[]; appState: any; files: any }) => {
     try {
-        localStorage.setItem(`${DRAWING_DATA_KEY}-${workspaceId}`, JSON.stringify(data));
+        localStorage.setItem(`${SCENE_DATA_KEY}-${drawingId}`, JSON.stringify(data));
     } catch (error) {
-        console.error("Failed to save drawing to localStorage:", error);
+        console.error("Failed to save scene to localStorage:", error);
     }
 };
 
-export const loadDrawingFromLocalStorage = (workspaceId: number | string) => {
+export const loadSceneFromLocalStorage = (drawingId: number | string) => {
     try {
-        const saved = localStorage.getItem(`${DRAWING_DATA_KEY}-${workspaceId}`);
+        const saved = localStorage.getItem(`${SCENE_DATA_KEY}-${drawingId}`);
+        // Migration support: check old key if new one doesn't exist
+        // The old key used "drawing-data" prefix and workspaceId.
+        if (!saved) {
+            const oldSaved = localStorage.getItem(`rechedraw-drawing-data-${drawingId}`);
+            if (oldSaved) {
+                // Migrate to new key
+                localStorage.setItem(`${SCENE_DATA_KEY}-${drawingId}`, oldSaved);
+                return JSON.parse(oldSaved);
+            }
+        }
         return saved ? JSON.parse(saved) : null;
     } catch (error) {
-        console.error("Failed to load drawing from localStorage:", error);
+        console.error("Failed to load scene from localStorage:", error);
         return null;
     }
 };
 
-// Load last workspace ID from localStorage
-export const loadLastWorkspaceId = (): number | null => {
+// Load last drawing ID from localStorage
+export const loadLastDrawingId = (): number | null => {
     try {
-        const data = localStorage.getItem(LAST_WORKSPACE_KEY);
+        const data = localStorage.getItem(LAST_DRAWING_KEY);
         if (data) {
             return parseInt(data, 10);
         }
+        // Fallback to old key
+        const oldData = localStorage.getItem("rechedraw-last-workspace-id");
+        if (oldData) {
+            const id = parseInt(oldData, 10);
+            saveLastDrawingId(id); // Migrate
+            return id;
+        }
     } catch (error) {
-        console.error("Failed to load last workspace ID:", error);
+        console.error("Failed to load last drawing ID:", error);
     }
     return null;
 };
 
-// Save last workspace ID to localStorage
-export const saveLastWorkspaceId = (workspaceId: number) => {
+// Save last drawing ID to localStorage
+export const saveLastDrawingId = (drawingId: number) => {
     try {
-        localStorage.setItem(LAST_WORKSPACE_KEY, workspaceId.toString());
+        localStorage.setItem(LAST_DRAWING_KEY, drawingId.toString());
     } catch (error) {
-        console.error("Failed to save last workspace ID:", error);
+        console.error("Failed to save last drawing ID:", error);
     }
 };
