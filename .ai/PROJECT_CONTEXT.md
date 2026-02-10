@@ -32,7 +32,43 @@
     * Make sure you never touch original excalidraw ui, try to position new features and buttons using their api OR by css, html tricks.
 6. **README.md**
     * Always keep the README.md file updated with the latest information about the project.
+7. **Monorepo**
+    * Always keep the monorepo structure updated with the latest information about the project.
+8. **API**
+    * Always keep the api structure updated with the latest information about the project.
+9. **Git**
+    Use this commit message format:
+```
+<type>(<scope>): <short summary>
+  │       │             │
+  │       │             └─⫸ Summary in present tense. Not capitalized. No period at the end.
+  │       │
+  │       └─⫸ Commit Scope: animations|bazel|benchpress|common|compiler|compiler-cli|core|
+  │                          elements|forms|http|language-service|localize|platform-browser|
+  │                          platform-browser-dynamic|platform-server|router|service-worker|
+  │                          upgrade|zone.js|packaging|changelog|docs-infra|migrations|
+  │                          devtools
+  │
+  └─⫸ Commit Type: build|ci|docs|feat|fix|perf|refactor|test
+```
 
+The `<type>` and `<summary>` fields are mandatory, the `(<scope>)` field is optional.
+
+### Type
+
+Must be one of the following:
+
+| Type         | Description                                                                                         |
+| ------------ | --------------------------------------------------------------------------------------------------- |
+| **build**    | Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm) |
+| **ci**       | Changes to our CI configuration files and scripts (examples: Github Actions, SauceLabs)             |
+| **docs**     | Documentation only changes                                                                          |
+| **feat**     | A new feature                                                                                       |
+| **fix**      | A bug fix                                                                                           |
+| **perf**     | A code change that improves performance                                                             |
+| **refactor** | A code change that neither fixes a bug nor adds a feature                                           |
+| **test**     | Adding missing tests or correcting existing tests                                                   |
+* create branches for each work you're doing, merge then to main when finished - squash merge
 
 ## 4. Current Features
 * ✅ **Full Excalidraw Canvas**: Complete drawing tools and library support.

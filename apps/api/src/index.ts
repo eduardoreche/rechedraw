@@ -1,5 +1,9 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import { errorHandler } from './middleware/error-handler';
+import { userRoutes } from './routes/user.routes';
+import { drawingRoutes } from './routes/drawing.routes';
+import { sceneRoutes } from './routes/scene.routes';
 
 const fastify = Fastify({
     logger: true
@@ -9,6 +13,14 @@ const fastify = Fastify({
 await fastify.register(cors, {
     origin: true // Allow all origins in development
 });
+
+// Register error handler
+fastify.setErrorHandler(errorHandler);
+
+// Register routes
+await fastify.register(userRoutes);
+await fastify.register(drawingRoutes);
+await fastify.register(sceneRoutes);
 
 // Health check endpoint
 fastify.get('/api/health', async () => {
@@ -32,3 +44,4 @@ const start = async () => {
 };
 
 start();
+
