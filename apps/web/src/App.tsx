@@ -1,4 +1,5 @@
 import { Excalidraw } from "@excalidraw/excalidraw";
+import { useNavigate } from "@tanstack/react-router";
 import "@excalidraw/excalidraw/index.css";
 import "./index.css";
 import {
@@ -27,7 +28,15 @@ import {
 const initialSlideOrder = loadSlideOrder();
 
 function App() {
-  const { logout } = useAuth();
+  const { logout, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate({ to: '/login' });
+    }
+  }, [isAuthenticated, navigate]);
+
   const {
     excalidrawAPI,
     setExcalidrawAPI,
