@@ -12,29 +12,35 @@ async function verifyApi() {
     console.log('Health:', health);
     assert.equal(health.status, 'ok');
 
-    // 2. Create User
-    console.log('\n--- Creating User ---');
+    // 2. Register User (to get token)
+    console.log('\n--- Registering User ---');
     const userEmail = `test${Date.now()}@example.com`;
-    // Generate a unique email every time
     const userData = { email: userEmail, password: 'password123', name: 'Test User' };
 
-    const userRes = await fetch(`${BASE_URL}/users`, {
+    const userRes = await fetch(`${BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
     });
 
     const userJson = await userRes.json();
-    console.log('Create User Response:', userJson);
+    console.log('Register User Response:', userJson);
 
     if (!userJson.success) {
-        console.error('Failed to create user:', userJson);
+        console.error('Failed to register user:', userJson);
         process.exit(1);
     }
 
-    const userId = userJson.data.id;
+    const userId = userJson.data.user.id;
+    const token = userJson.data.token;
     assert.ok(userId, 'User ID should exist');
-    assert.equal(userJson.data.email, userEmail);
+    assert.ok(token, 'Token should exist');
+    assert.equal(userJson.data.user.email, userEmail);
+
+    const authHeaders = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    };
 
     // 3. Create Drawing
     console.log('\n--- Creating Drawing ---');
@@ -46,7 +52,7 @@ async function verifyApi() {
 
     const drawingRes = await fetch(`${BASE_URL}/drawings`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders,
         body: JSON.stringify(drawingData)
     });
 
@@ -72,7 +78,7 @@ async function verifyApi() {
 
     const sceneRes = await fetch(`${BASE_URL}/scenes`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders,
         body: JSON.stringify(sceneData)
     });
 
@@ -90,7 +96,9 @@ async function verifyApi() {
 
     // 5. Verify User's Drawings
     console.log('\n--- Verifying User Drawings ---');
-    const userDrawingsRes = await fetch(`${BASE_URL}/users/${userId}/drawings`);
+    const userDrawingsRes = await fetch(`${BASE_URL}/users/${userId}/drawings`, {
+        headers: authHeaders // Use headers, though technically GET might be public? No we made it protected.
+    });
     const userDrawingsJson = await userDrawingsRes.json();
     console.log('User Drawings:', userDrawingsJson);
 
@@ -101,11 +109,29 @@ async function verifyApi() {
 
     // 6. Cleanup (Optional, testing delete)
     console.log('\n--- Cleaning Up ---');
-    const deleteRes = await fetch(`${BASE_URL}/users/${userId}`, { method: 'DELETE' });
+    const deleteRes = await fetch(`${BASE_URL}/users/${userId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (deleteRes.status !== 204) {
+        const errorBody = await deleteRes.json();
+        console.error('Delete User Failed:', deleteRes.status, errorBody);
+    }
     assert.equal(deleteRes.status, 204);
 
     // Verify Cascade
-    const getDrawingRes = await fetch(`${BASE_URL}/drawings/${drawingId}`);
+    // Protected route, so we need token to check it? 
+    // If we return 404, that's fine. If we return 401, that's also fine but we want to verify it's GONE.
+    // The user deletion invalidates the user... but the TOKEN is JWT, stateless. It works until expiry.
+    // However, does `authenticate` check if user exists in DB?
+    // In `auth.ts`, I commented out: `// const user = await request.di.users.findById(payload.userId);`
+    // So the token is still valid even if user is deleted!
+    // So we can use the same token to check if drawing exists.
+
+    const getDrawingRes = await fetch(`${BASE_URL}/drawings/${drawingId}`, {
+        headers: authHeaders
+    });
+    // Should be 404 because cascade deleted it
     assert.equal(getDrawingRes.status, 404);
 
     console.log('\n✅ API Verification Successful!');

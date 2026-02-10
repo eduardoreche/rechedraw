@@ -1,7 +1,16 @@
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import Fastify, { FastifyInstance } from 'fastify';
+
+// Mock authentication middleware
+vi.mock('../../middleware/auth', () => ({
+    authenticate: async (request: any, reply: any) => {
+        request.user = { id: 1, email: 'test@example.com' };
+    }
+}));
+
 import { sceneRoutes } from '../scene.routes';
+import diMockPlugin from '../../plugins/di.mock';
 import { errorHandler } from '../../middleware/error-handler';
 
 describe('Scene Routes', () => {
@@ -10,6 +19,7 @@ describe('Scene Routes', () => {
     beforeAll(async () => {
         app = Fastify();
         app.setErrorHandler(errorHandler);
+        await app.register(diMockPlugin);
         await app.register(sceneRoutes);
         await app.ready();
     });
@@ -47,7 +57,7 @@ describe('Scene Routes', () => {
             payload
         });
 
-        // Similar to drawings, check if validation passed (not 400)
-        expect(response.statusCode).not.toBe(400);
+        // Should succeed with 201
+        expect(response.statusCode).toBe(201);
     });
 });

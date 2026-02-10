@@ -1,5 +1,7 @@
 # recheDraw
 
+This is a personal project, I'm working on to test what tools such as **Antigravity** can do in a software development.
+
 An open-source fork of [Excalidraw](https://excalidraw.com) with enhanced features for managing multiple drawings, presentation mode, and persistent storage.
 
 ## Features
@@ -118,4 +120,4 @@ Built on top of [Excalidraw](https://github.com/excalidraw/excalidraw) - an amaz
 
 ---
 
-*Built with ❤️ and AI assistance.*
+*Built with ❤️, patience and AI assistance.*

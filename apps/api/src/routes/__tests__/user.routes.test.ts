@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import Fastify, { FastifyInstance } from 'fastify';
 import { userRoutes } from '../user.routes';
+import diMockPlugin from '../../plugins/di.mock';
 import { errorHandler } from '../../middleware/error-handler';
 
 describe('User Routes', () => {
@@ -10,6 +11,7 @@ describe('User Routes', () => {
     beforeAll(async () => {
         app = Fastify();
         app.setErrorHandler(errorHandler);
+        await app.register(diMockPlugin);
         await app.register(userRoutes);
         await app.ready();
     });

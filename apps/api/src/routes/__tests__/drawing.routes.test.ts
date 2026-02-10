@@ -1,7 +1,17 @@
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import Fastify, { FastifyInstance } from 'fastify';
+
+// Mock authentication middleware
+vi.mock('../../middleware/auth', () => ({
+    authenticate: async (request: any, reply: any) => {
+        // Mock authenticated user
+        request.user = { id: 1, email: 'test@example.com' };
+    }
+}));
+
 import { drawingRoutes } from '../drawing.routes';
+import diMockPlugin from '../../plugins/di.mock';
 import { errorHandler } from '../../middleware/error-handler';
 
 describe('Drawing Routes', () => {
@@ -10,6 +20,7 @@ describe('Drawing Routes', () => {
     beforeAll(async () => {
         app = Fastify();
         app.setErrorHandler(errorHandler);
+        await app.register(diMockPlugin);
         await app.register(drawingRoutes);
         await app.ready();
     });
@@ -46,13 +57,11 @@ describe('Drawing Routes', () => {
         // We'll accept 201 (success) or 500 (DB error but route hit).
         // To be proper, we should mock. But for this step, let's just ensure the validation passes.
 
-        if (response.statusCode === 201) {
-            const body = JSON.parse(response.body);
-            expect(body.success).toBe(true);
-        } else {
-            // If it fails due to FK, it means validation passed at least.
-            expect(response.statusCode).not.toBe(400);
-        }
+
+        // With mock repo, this should now succeed completely (201)
+        expect(response.statusCode).toBe(201);
+        const body = JSON.parse(response.body);
+        expect(body.success).toBe(true);
     });
 
     it('should fail validation with missing fields', async () => {

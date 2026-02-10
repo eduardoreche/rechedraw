@@ -1,16 +1,13 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { PostgresDrawingRepository } from '../repositories/postgres/drawing.repository';
 import { successResponse } from '../types/response-types';
 import { createDrawingSchema, updateDrawingSchema, drawingIdParamSchema, userIdParamSchema } from '../validators/drawing.schemas';
-
-const drawingRepository = new PostgresDrawingRepository();
 
 export async function createDrawing(
     request: FastifyRequest,
     reply: FastifyReply
 ) {
     const validatedData = createDrawingSchema.parse(request.body);
-    const drawing = await drawingRepository.create(validatedData);
+    const drawing = await request.di.drawings.create(validatedData);
     return reply.status(201).send(successResponse(drawing));
 }
 
@@ -19,7 +16,7 @@ export async function getDrawingById(
     reply: FastifyReply
 ) {
     const { id } = drawingIdParamSchema.parse(request.params);
-    const drawing = await drawingRepository.findById(id);
+    const drawing = await request.di.drawings.findById(id);
 
     if (!drawing) {
         return reply.status(404).send({
@@ -36,7 +33,7 @@ export async function getDrawingsByUserId(
     reply: FastifyReply
 ) {
     const { userId } = userIdParamSchema.parse(request.params);
-    const drawings = await drawingRepository.findByUserId(userId);
+    const drawings = await request.di.drawings.findByUserId(userId);
     return reply.send(successResponse(drawings));
 }
 
@@ -46,7 +43,7 @@ export async function updateDrawing(
 ) {
     const { id } = drawingIdParamSchema.parse(request.params);
     const validatedData = updateDrawingSchema.parse(request.body);
-    const drawing = await drawingRepository.update(id, validatedData);
+    const drawing = await request.di.drawings.update(id, validatedData);
     return reply.send(successResponse(drawing));
 }
 
@@ -55,7 +52,7 @@ export async function deleteDrawing(
     reply: FastifyReply
 ) {
     const { id } = drawingIdParamSchema.parse(request.params);
-    await drawingRepository.delete(id);
+    await request.di.drawings.delete(id);
     return reply.status(204).send();
 }
 
@@ -63,6 +60,6 @@ export async function getAllDrawings(
     request: FastifyRequest,
     reply: FastifyReply
 ) {
-    const drawings = await drawingRepository.findAll();
+    const drawings = await request.di.drawings.findAll();
     return reply.send(successResponse(drawings));
 }
