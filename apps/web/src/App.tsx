@@ -7,9 +7,10 @@ import {
   SlidesSidebar
 } from "./components/presentation";
 import { useState, useEffect, useRef } from "react";
-import { Presentation, PanelRightOpen } from "lucide-react";
+import { Presentation, PanelRightOpen, LogOut } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { DrawingSidebar } from "./features/drawing-list/components/DrawingSidebar";
+import { useAuth } from "./context/auth-context";
 import { useScenes, useSaveScene } from "./hooks/use-scenes";
 import { useDrawings, useCreateDrawing } from "./hooks/use-drawings";
 import { usePersistence } from "./hooks/use-persistence";
@@ -26,6 +27,7 @@ import {
 const initialSlideOrder = loadSlideOrder();
 
 function App() {
+  const { logout } = useAuth();
   const {
     excalidrawAPI,
     setExcalidrawAPI,
@@ -194,6 +196,15 @@ function App() {
                       <Presentation className="h-4 w-4 mr-2" />
                       Presentation
                     </Button>
+
+                    <Button
+                      onClick={logout}
+                      variant="ghost"
+                      className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      title="Logout"
+                    >
+                      <LogOut className="h-4 w-4" />
+                    </Button>
                   </>
                 )}
               </div>
@@ -224,7 +235,7 @@ function App() {
           />
         )}
       </div>
-    </div>
+    </div >
   );
 }
 

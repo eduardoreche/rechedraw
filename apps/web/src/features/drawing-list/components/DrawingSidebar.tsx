@@ -83,7 +83,7 @@ export function DrawingSidebar({
     };
 
     // Filter drawings
-    const filteredDrawings = drawings?.filter(d =>
+    const filteredDrawings = drawings?.filter((d: Drawing) =>
         d.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -129,7 +129,7 @@ export function DrawingSidebar({
                     <Input
                         placeholder="Search drawings..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                         className="h-8 text-sm"
                     />
                 </div>
@@ -222,7 +222,7 @@ export function DrawingSidebar({
                                                     size="icon"
                                                     variant="ghost"
                                                     className="h-6 w-6 text-destructive hover:text-destructive"
-                                                    onClick={(e) => handleDelete(e, d.id)}
+                                                    onClick={(e: React.MouseEvent) => handleDelete(e, d.id)}
                                                 >
                                                     <Trash2 className="h-3 w-3" />
                                                 </Button>
@@ -242,8 +242,8 @@ export function DrawingSidebar({
                         <Input
                             placeholder="Drawing Name"
                             value={newDrawingName}
-                            onChange={(e) => setNewDrawingName(e.target.value)}
-                            onKeyDown={(e) => {
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewDrawingName(e.target.value)}
+                            onKeyDown={(e: React.KeyboardEvent) => {
                                 if (e.key === 'Enter') handleCreate();
                                 if (e.key === 'Escape') setIsCreating(false);
                             }}
